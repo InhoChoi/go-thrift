@@ -11,9 +11,9 @@ func handleClient(client *helloworld.HelloWorldClient) (err error) {
 	data := &helloworld.Hello{}
 	data.Name = "InhoChoi"
 	data.Number = 32
-  result, _ := client.Helloworld(data)
+	result, _ := client.Helloworld(data)
 
-	fmt.Println("Result :",result)
+	fmt.Println("Result :", result)
 	return nil
 }
 
