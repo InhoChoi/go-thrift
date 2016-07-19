@@ -8,7 +8,12 @@ import (
 )
 
 func handleClient(client *helloworld.HelloWorldClient) (err error) {
-  client.Helloworld()
+	data := &helloworld.Hello{}
+	data.Name = "InhoChoi"
+	data.Number = 32
+  result, _ := client.Helloworld(data)
+
+	fmt.Println("Result :",result)
 	return nil
 }
 

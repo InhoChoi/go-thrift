@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+    "github.com/inhochoi/go-thrift/thrift/helloworld"
 )
 
 type HelloWorldHandler struct {
@@ -11,7 +12,7 @@ func NewHelloWorldHandler() *HelloWorldHandler {
     return &HelloWorldHandler{}
 }
 
-func (p *HelloWorldHandler) Helloworld() (err error) {
+func (p *HelloWorldHandler) Helloworld(hello *helloworld.Hello) (int32, error) {
     fmt.Println("Hello World")
-    return nil
+    return hello.Number, nil
 }
