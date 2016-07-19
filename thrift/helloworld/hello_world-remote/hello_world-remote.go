@@ -20,7 +20,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
-	fmt.Fprintln(os.Stderr, "  void helloworld(Hello hello)")
+	fmt.Fprintln(os.Stderr, "  i32 helloworld(Hello hello)")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }

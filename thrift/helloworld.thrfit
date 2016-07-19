@@ -5,5 +5,5 @@ struct Hello {
   2: string name
 }
 service HelloWorld{
-  void helloworld(1:Hello hello)
+  i32 helloworld(1:Hello hello)
 }

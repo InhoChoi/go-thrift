@@ -17,7 +17,7 @@ var _ = bytes.Equal
 type HelloWorld interface {
 	// Parameters:
 	//  - Hello
-	Helloworld(hello *Hello) (err error)
+	Helloworld(hello *Hello) (r int32, err error)
 }
 
 type HelloWorldClient struct {
@@ -48,7 +48,7 @@ func NewHelloWorldClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, op
 
 // Parameters:
 //  - Hello
-func (p *HelloWorldClient) Helloworld(hello *Hello) (err error) {
+func (p *HelloWorldClient) Helloworld(hello *Hello) (r int32, err error) {
 	if err = p.sendHelloworld(hello); err != nil {
 		return
 	}
@@ -77,7 +77,7 @@ func (p *HelloWorldClient) sendHelloworld(hello *Hello) (err error) {
 	return oprot.Flush()
 }
 
-func (p *HelloWorldClient) recvHelloworld() (err error) {
+func (p *HelloWorldClient) recvHelloworld() (value int32, err error) {
 	iprot := p.InputProtocol
 	if iprot == nil {
 		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -119,6 +119,7 @@ func (p *HelloWorldClient) recvHelloworld() (err error) {
 	if err = iprot.ReadMessageEnd(); err != nil {
 		return
 	}
+	value = result.GetSuccess()
 	return
 }
 
@@ -184,14 +185,17 @@ func (p *helloWorldProcessorHelloworld) Process(seqId int32, iprot, oprot thrift
 
 	iprot.ReadMessageEnd()
 	result := HelloWorldHelloworldResult{}
+	var retval int32
 	var err2 error
-	if err2 = p.handler.Helloworld(args.Hello); err2 != nil {
+	if retval, err2 = p.handler.Helloworld(args.Hello); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing helloworld: "+err2.Error())
 		oprot.WriteMessageBegin("helloworld", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush()
 		return true, err2
+	} else {
+		result.Success = &retval
 	}
 	if err2 = oprot.WriteMessageBegin("helloworld", thrift.REPLY, seqId); err2 != nil {
 		err = err2
@@ -312,11 +316,26 @@ func (p *HelloWorldHelloworldArgs) String() string {
 	return fmt.Sprintf("HelloWorldHelloworldArgs(%+v)", *p)
 }
 
+// Attributes:
+//  - Success
 type HelloWorldHelloworldResult struct {
+	Success *int32 `thrift:"success,0" json:"success,omitempty"`
 }
 
 func NewHelloWorldHelloworldResult() *HelloWorldHelloworldResult {
 	return &HelloWorldHelloworldResult{}
+}
+
+var HelloWorldHelloworldResult_Success_DEFAULT int32
+
+func (p *HelloWorldHelloworldResult) GetSuccess() int32 {
+	if !p.IsSetSuccess() {
+		return HelloWorldHelloworldResult_Success_DEFAULT
+	}
+	return *p.Success
+}
+func (p *HelloWorldHelloworldResult) IsSetSuccess() bool {
+	return p.Success != nil
 }
 
 func (p *HelloWorldHelloworldResult) Read(iprot thrift.TProtocol) error {
@@ -332,8 +351,15 @@ func (p *HelloWorldHelloworldResult) Read(iprot thrift.TProtocol) error {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err := iprot.Skip(fieldTypeId); err != nil {
-			return err
+		switch fieldId {
+		case 0:
+			if err := p.readField0(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
 		}
 		if err := iprot.ReadFieldEnd(); err != nil {
 			return err
@@ -345,9 +371,21 @@ func (p *HelloWorldHelloworldResult) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *HelloWorldHelloworldResult) readField0(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(); err != nil {
+		return thrift.PrependError("error reading field 0: ", err)
+	} else {
+		p.Success = &v
+	}
+	return nil
+}
+
 func (p *HelloWorldHelloworldResult) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("helloworld_result"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+	}
+	if err := p.writeField0(oprot); err != nil {
+		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
 		return thrift.PrependError("write field stop error: ", err)
@@ -356,6 +394,21 @@ func (p *HelloWorldHelloworldResult) Write(oprot thrift.TProtocol) error {
 		return thrift.PrependError("write struct stop error: ", err)
 	}
 	return nil
+}
+
+func (p *HelloWorldHelloworldResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err)
+		}
+		if err := oprot.WriteI32(int32(*p.Success)); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err)
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err)
+		}
+	}
+	return err
 }
 
 func (p *HelloWorldHelloworldResult) String() string {
