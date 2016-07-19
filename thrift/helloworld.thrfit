@@ -1,5 +1,9 @@
 namespace go helloworld
 
+struct Hello {
+  1: i32 number
+  2: string name
+}
 service HelloWorld{
-  void helloworld()
+  void helloworld(1:Hello hello)
 }

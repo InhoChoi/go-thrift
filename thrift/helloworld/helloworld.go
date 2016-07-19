@@ -15,7 +15,9 @@ var _ = fmt.Printf
 var _ = bytes.Equal
 
 type HelloWorld interface {
-	Helloworld() (err error)
+	// Parameters:
+	//  - Hello
+	Helloworld(hello *Hello) (err error)
 }
 
 type HelloWorldClient struct {
@@ -44,14 +46,16 @@ func NewHelloWorldClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, op
 	}
 }
 
-func (p *HelloWorldClient) Helloworld() (err error) {
-	if err = p.sendHelloworld(); err != nil {
+// Parameters:
+//  - Hello
+func (p *HelloWorldClient) Helloworld(hello *Hello) (err error) {
+	if err = p.sendHelloworld(hello); err != nil {
 		return
 	}
 	return p.recvHelloworld()
 }
 
-func (p *HelloWorldClient) sendHelloworld() (err error) {
+func (p *HelloWorldClient) sendHelloworld(hello *Hello) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -61,7 +65,9 @@ func (p *HelloWorldClient) sendHelloworld() (err error) {
 	if err = oprot.WriteMessageBegin("helloworld", thrift.CALL, p.SeqId); err != nil {
 		return
 	}
-	args := HelloWorldHelloworldArgs{}
+	args := HelloWorldHelloworldArgs{
+		Hello: hello,
+	}
 	if err = args.Write(oprot); err != nil {
 		return
 	}
@@ -179,7 +185,7 @@ func (p *helloWorldProcessorHelloworld) Process(seqId int32, iprot, oprot thrift
 	iprot.ReadMessageEnd()
 	result := HelloWorldHelloworldResult{}
 	var err2 error
-	if err2 = p.handler.Helloworld(); err2 != nil {
+	if err2 = p.handler.Helloworld(args.Hello); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing helloworld: "+err2.Error())
 		oprot.WriteMessageBegin("helloworld", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
@@ -207,11 +213,26 @@ func (p *helloWorldProcessorHelloworld) Process(seqId int32, iprot, oprot thrift
 
 // HELPER FUNCTIONS AND STRUCTURES
 
+// Attributes:
+//  - Hello
 type HelloWorldHelloworldArgs struct {
+	Hello *Hello `thrift:"hello,1" json:"hello"`
 }
 
 func NewHelloWorldHelloworldArgs() *HelloWorldHelloworldArgs {
 	return &HelloWorldHelloworldArgs{}
+}
+
+var HelloWorldHelloworldArgs_Hello_DEFAULT *Hello
+
+func (p *HelloWorldHelloworldArgs) GetHello() *Hello {
+	if !p.IsSetHello() {
+		return HelloWorldHelloworldArgs_Hello_DEFAULT
+	}
+	return p.Hello
+}
+func (p *HelloWorldHelloworldArgs) IsSetHello() bool {
+	return p.Hello != nil
 }
 
 func (p *HelloWorldHelloworldArgs) Read(iprot thrift.TProtocol) error {
@@ -227,8 +248,15 @@ func (p *HelloWorldHelloworldArgs) Read(iprot thrift.TProtocol) error {
 		if fieldTypeId == thrift.STOP {
 			break
 		}
-		if err := iprot.Skip(fieldTypeId); err != nil {
-			return err
+		switch fieldId {
+		case 1:
+			if err := p.readField1(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
 		}
 		if err := iprot.ReadFieldEnd(); err != nil {
 			return err
@@ -240,9 +268,20 @@ func (p *HelloWorldHelloworldArgs) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
+func (p *HelloWorldHelloworldArgs) readField1(iprot thrift.TProtocol) error {
+	p.Hello = &Hello{}
+	if err := p.Hello.Read(iprot); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Hello), err)
+	}
+	return nil
+}
+
 func (p *HelloWorldHelloworldArgs) Write(oprot thrift.TProtocol) error {
 	if err := oprot.WriteStructBegin("helloworld_args"); err != nil {
 		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+	}
+	if err := p.writeField1(oprot); err != nil {
+		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
 		return thrift.PrependError("write field stop error: ", err)
@@ -251,6 +290,19 @@ func (p *HelloWorldHelloworldArgs) Write(oprot thrift.TProtocol) error {
 		return thrift.PrependError("write struct stop error: ", err)
 	}
 	return nil
+}
+
+func (p *HelloWorldHelloworldArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("hello", thrift.STRUCT, 1); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:hello: ", p), err)
+	}
+	if err := p.Hello.Write(oprot); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Hello), err)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 1:hello: ", p), err)
+	}
+	return err
 }
 
 func (p *HelloWorldHelloworldArgs) String() string {

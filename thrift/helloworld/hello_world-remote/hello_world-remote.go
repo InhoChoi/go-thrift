@@ -20,7 +20,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
-	fmt.Fprintln(os.Stderr, "  void helloworld()")
+	fmt.Fprintln(os.Stderr, "  void helloworld(Hello hello)")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }
@@ -116,11 +116,28 @@ func main() {
 
 	switch cmd {
 	case "helloworld":
-		if flag.NArg()-1 != 0 {
-			fmt.Fprintln(os.Stderr, "Helloworld requires 0 args")
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "Helloworld requires 1 args")
 			flag.Usage()
 		}
-		fmt.Print(client.Helloworld())
+		arg4 := flag.Arg(1)
+		mbTrans5 := thrift.NewTMemoryBufferLen(len(arg4))
+		defer mbTrans5.Close()
+		_, err6 := mbTrans5.WriteString(arg4)
+		if err6 != nil {
+			Usage()
+			return
+		}
+		factory7 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt8 := factory7.GetProtocol(mbTrans5)
+		argvalue0 := helloworld.NewHello()
+		err9 := argvalue0.Read(jsProt8)
+		if err9 != nil {
+			Usage()
+			return
+		}
+		value0 := argvalue0
+		fmt.Print(client.Helloworld(value0))
 		fmt.Print("\n")
 		break
 	case "":
