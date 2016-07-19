@@ -1,0 +1,5 @@
+namespace go helloworld
+
+service HelloWorld{
+  void helloworld()
+}
