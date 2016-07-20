@@ -8,7 +8,7 @@ import (
 func main() {
 	var addr string = "localhost:9090"
 	var secure bool = false
-	var protocolFactory thrift.TProtocolFactory = thrift.NewTBinaryProtocolFactoryDefault()
+	var protocolFactory thrift.TProtocolFactory = thrift.NewTCompactProtocolFactory()
 	var transportFactory thrift.TTransportFactory = thrift.NewTTransportFactory()
 
 	if err := runServer(transportFactory, protocolFactory, addr, secure); err != nil {
